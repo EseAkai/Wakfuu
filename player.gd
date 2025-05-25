@@ -1,0 +1,117 @@
+extends CharacterBody2D
+var line_pos:Vector2
+const tile_size: Vector2 = Vector2(16,16)
+var sprite_node_pos_tween:Tween
+var target_position: Vector2
+@export var is_moving :=false
+var move_queue: Array = []
+
+@export var line: Line2D
+
+func _ready():
+	target_position = global_position
+	
+func _unhandled_input(event):
+	
+	if Input.is_action_just_pressed("LMB"):
+		
+		if not is_moving:
+			
+			var click_pos = get_global_mouse_position()
+			target_position = snap_to_grid(click_pos)
+			calculate_path(target_position)
+			move_to_target()
+
+func calculate_path(target_position):	
+	var current_pos = snap_to_grid(global_position)
+	line_pos = current_pos
+	var distance = snap_to_grid(target_position)-current_pos
+	var points:PackedVector2Array = PackedVector2Array()
+	points.append(line_pos)
+	
+	line.clear_points()
+	move_queue.clear()
+	
+	
+	var steps_x = int(distance.x/tile_size.x)
+	for i in range(abs(steps_x)):
+		move_queue.append(Vector2(sign(steps_x),0))
+		points.append(line_pos)
+		line_pos += Vector2(sign(steps_x),0)*tile_size
+		
+		
+
+	var steps_y = int(distance.y/tile_size.y)
+	for i in range(abs(steps_y)):
+		move_queue.append(Vector2(0,sign(steps_y)))
+		points.append(line_pos)
+		line_pos += Vector2(0,sign(steps_y))*tile_size
+		
+	points.append(line_pos)
+	print(points)
+	for i in range(points.size()):
+		line.add_point(points[i],i)
+		
+
+
+func snap_to_grid(pos: Vector2) -> Vector2: #casilla mas cercana al ratón
+	var tile_coord = Vector2(
+		floor(pos.x / tile_size.x),
+		floor(pos.y / tile_size.y)
+	)
+	return tile_coord * tile_size + tile_size/2
+
+func move_to_target():
+
+	var next_dir
+	var raycast
+
+# Verificar colisión en esa dirección
+
+	for i in range(0,move_queue.size()):
+		raycast = direccion_raycast(move_queue[i])
+		if (raycast.is_colliding()):
+			move_queue.clear()
+			is_moving = false
+			break
+		_move(move_queue[i])
+		line.remove_point(0)
+		await get_tree().create_timer(0.2).timeout
+		
+	line.remove_point(0)
+	is_moving = false;
+	
+
+func path_visual():
+	var mouse_pos = snap_to_grid(get_global_mouse_position())
+	if not is_moving:
+		calculate_path(mouse_pos)
+	
+
+func direccion_raycast(dir: Vector2)->RayCast2D:
+	if dir.y <0: return $up
+	if dir.y>0: return $down
+	if dir.x<0: return $left
+	return $right
+
+func _physics_process(delta:float)->void:
+	path_visual()
+	
+		
+
+func _move(dir: Vector2):
+	global_position += dir*tile_size
+	$Icon.global_position -= dir*tile_size
+
+	if sprite_node_pos_tween: 
+		sprite_node_pos_tween.kill()
+	sprite_node_pos_tween=create_tween()
+	sprite_node_pos_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	sprite_node_pos_tween.tween_property($Icon, "global_position", global_position,0.185).set_trans(Tween.TRANS_SINE)
+
+	is_moving = true
+
+func _on_move_finished():
+	global_position = snap_to_grid($Icon.global_position)
+	is_moving = false
+	move_to_target()
