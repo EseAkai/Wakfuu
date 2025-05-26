@@ -1,11 +1,11 @@
 [gd_scene load_steps=6 format=3 uid="uid://ct733jhs1ksqy"]
 
-[ext_resource type="PackedScene" uid="uid://bod2sijtvajcg" path="res://player.tscn" id="1_45osl"]
-[ext_resource type="Script" path="res://Camera2D.gd" id="2_ldyqf"]
-[ext_resource type="Texture2D" uid="uid://c2anqpmi6mj2x" path="res://art_thumbnail.png" id="3_i553a"]
+[ext_resource type="PackedScene" uid="uid://bod2sijtvajcg" path="res://scenes/player.tscn" id="1_45osl"]
+[ext_resource type="Script" path="res://scripts/Camera2D.gd" id="2_ie1qr"]
+[ext_resource type="Texture2D" uid="uid://c2anqpmi6mj2x" path="res://sprites/art_thumbnail.png" id="3_fnpf5"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aupoy"]
-texture = ExtResource("3_i553a")
+texture = ExtResource("3_fnpf5")
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
@@ -674,6 +674,7 @@ texture = ExtResource("3_i553a")
 
 [sub_resource type="TileSet" id="TileSet_264uj"]
 physics_layer_0/collision_layer = 1
+navigation_layer_0/layers = 1
 sources/0 = SubResource("TileSetAtlasSource_aupoy")
 
 [node name="Node2D" type="Node2D"]
@@ -684,7 +685,7 @@ line = NodePath("../Line2D")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(10, 10)
-script = ExtResource("2_ldyqf")
+script = ExtResource("2_ie1qr")
 
 [node name="TileMap" type="TileMap" parent="."]
 z_index = -1
